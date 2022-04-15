@@ -223,7 +223,11 @@ class Deployment extends WireData {
             ");
           }
           else {
-            $this->exec("rm -rf $from && ln -snf $to $from");
+            $this->exec("
+              mkdir -p $toDir
+              rm -rf $from
+              ln -snf $to $from
+            ");
           }
         }
       }
