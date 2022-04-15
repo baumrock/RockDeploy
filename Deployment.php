@@ -170,7 +170,7 @@ class Deployment extends WireData {
           ");
         }
         else {
-          $this->exec("ln -sf $to $from");
+          $this->exec("rm -rf $from && ln -snf $to $from");
         }
       }
     }
