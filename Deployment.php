@@ -147,25 +147,25 @@ class Deployment extends WireData {
       $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
       $toDir = $isfile ? dirname($toAbs) : $toAbs;
 
-      if($isfile) $this->echo("Sharing file $from");
-      else $this->echo("Sharing directory $from");
-
       // we create relative symlinks
       $level = substr_count($file, "/");
       $to = "shared/$file";
       for($i=0;$i<=$level;$i++) $to = "../$to";
 
-      // make sure that the new file or folder exists
-      if($type == 'push') {
-        $this->exec("
-          rm -rf $toAbs
-          mkdir -p $toDir
-          mv $from $toAbs
-        ");
+      if($isfile) {
+        $this->echo("Sharing file $from");
       }
-      if($type == 'link') {
+      else {
+        $this->echo("Sharing directory $from");
+        if($type == 'push') {
+          $this->exec("
+            rm -rf $toAbs
+            mkdir -p $toDir
+            mv $from $toDir
+          ");
+        }
+        $this->exec("ln -sfn $to $from");
       }
-      $this->exec("ln -sfn $to $from");
     }
   }
 
