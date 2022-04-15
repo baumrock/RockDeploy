@@ -146,7 +146,11 @@ class Deployment extends WireData {
   }
 
   public function hello() {
-    $this->echo("Hi there, I'm RockDeploy...");
+    $this->echo("
+      ##########################
+      RockDeploy by baumrock.com
+      ##########################
+    ");
   }
 
   /**
@@ -160,6 +164,7 @@ class Deployment extends WireData {
    * Run default actions
    */
   public function run() {
+    $this->hello();
     $this->share();
     $this->delete();
     $this->secure();
