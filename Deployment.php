@@ -45,6 +45,7 @@ class Deployment extends WireData {
         else $this->echo("keeping $base", 2);
       }
     }
+    $this->echo("Done");
   }
 
   /**
