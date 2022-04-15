@@ -82,13 +82,13 @@ class Deployment extends WireData {
    * @return void
    */
   public function finish($keep = 3) {
-    $old = $this->paths->release;
-    $new = substr(basename($old), 4);
+    $oldPath = $this->paths->release;
+    $newName = substr(basename($oldPath), 4);
     $this->echo("Finishing deployment - updating current symlink...");
-    $this->exec("mv $old $new");
+    $this->exec("mv $oldPath {$this->paths->root}/$newName");
     $this->exec("
       cd {$this->paths->root}
-      ln -sfn $new current
+      ln -sfn $newName current
     ");
     $this->deleteOldReleases($keep);
   }
