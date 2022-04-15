@@ -88,7 +88,7 @@ class Deployment extends WireData {
       }
       if($rename) {
         if($cnt>1) {
-          $this->echo(">> $base  >  $base-", 2);
+          $this->echo(">> $base  >>>  $base-", 2);
           $this->exec("mv $folder $folder-");
           $folder = "$folder-";
           $base = "$base-";
