@@ -82,18 +82,18 @@ class Deployment extends WireData {
       $cnt++;
       $base = basename($folder);
       if($cnt>$keep) {
-        $this->echo("delete: $base", 2);
+        $this->echo("delete $base", 2);
         $this->exec("rm -rf $folder");
         continue;
       }
       if($rename) {
         if($cnt>1) {
-          $this->echo("rename: $base-", 2);
+          $this->echo("rename $base  >>>  $base-", 2);
           $this->exec("mv $folder $folder-");
           $folder = "$folder-";
           $base = "$base-";
         }
-        else $this->echo("create: $base", 2);
+        else $this->echo("create $base", 2);
       }
     }
     $this->echo("Done");
