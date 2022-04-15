@@ -225,7 +225,7 @@ class Deployment extends WireData {
           }
           else {
             $this->exec("
-              mkdir -p $toDir
+              mkdir -p $toAbs
               rm -rf $from
               ln -snf $to $from
             ");
