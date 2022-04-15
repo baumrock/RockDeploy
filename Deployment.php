@@ -141,7 +141,7 @@ class Deployment extends WireData {
       }
 
       // prepare the src path
-      $file = ltrim($file, "/");
+      $file = trim($file, "/");
       $from = Paths::normalizeSeparators("$release/$file");
       $toAbs = Paths::normalizeSeparators("$shared/$file");
       $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
