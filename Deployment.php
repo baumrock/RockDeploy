@@ -60,6 +60,7 @@ class Deployment extends WireData {
       $this->echo("Deleting files...");
       foreach($this->delete as $file) {
         $file = trim(Paths::normalizeSeparators($file), "/");
+        $this->echo("  $file");
         $this->exec("rm -rf $file");
       }
       $this->echo("Done");
