@@ -1,5 +1,6 @@
 <?php namespace RockDeploy;
 
+use ProcessWire\Paths;
 use ProcessWire\WireData;
 
 // we make sure that the current working directory is the PW root
@@ -18,6 +19,9 @@ class Deployment extends WireData {
 
     // path to the root that contains all releases and current + shared folder
     $this->paths->root = dirname($this->paths->release);
+
+    // path to shared folder
+    $this->paths->shared = $this->paths->root."/shared";
   }
 
   /**
@@ -52,6 +56,10 @@ class Deployment extends WireData {
     $this->echo("Done");
   }
 
+  public function dry($flag = true) {
+    $this->dry = $flag;
+  }
+
   /**
    * Echo message to stout
    */
@@ -69,6 +77,7 @@ class Deployment extends WireData {
    * Execute command and echo output
    */
   public function exec($cmd, $echoCmd = false) {
+    if($this->dry) $echoCmd = true;
     if($echoCmd) $this->echo($cmd);
     if($this->dry) return;
     exec($cmd, $out);
@@ -102,6 +111,62 @@ class Deployment extends WireData {
    */
   public function paths() {
     $this->echo($this->paths->getArray());
+  }
+
+  /**
+   * Share files and folders
+   *
+   * Usage:
+   * $deploy->share(
+   *   '/site/assets/files/123' => 'push',
+   *   '/site/assets/files' => 'link', // link is default
+   *   '/site/config-local.php',
+   * );
+   * @return void
+   */
+  public function share(array $files) {
+    $this->echo("Setting up shared files...");
+
+    $release = $this->paths->release;
+    $shared = $this->paths->shared;
+
+    foreach($files as $k=>$v) {
+      $file = $v;
+
+      // push to shared folder or just create link?
+      $type = 'link';
+      if(is_string($k)) {
+        $file = $k;
+        $type = $v;
+      }
+
+      // prepare the src path
+      $file = ltrim($file, "/");
+      $from = Paths::normalizeSeparators("$release/$file");
+      $toAbs = Paths::normalizeSeparators("$shared/$file");
+      $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
+      $toDir = $isfile ? dirname($toAbs) : $toAbs;
+
+      if($isfile) $this->echo("Sharing file $from");
+      else $this->echo("Sharing directory $from");
+
+      // we create relative symlinks
+      $level = substr_count($file, "/");
+      $to = "shared/$file";
+      for($i=0;$i<=$level;$i++) $to = "../$to";
+
+      // make sure that the new file or folder exists
+      if($type == 'push') {
+        $this->exec("
+          rm -rf $toAbs
+          mkdir -p $toDir
+          mv $from $toAbs
+        ");
+      }
+      if($type == 'link') {
+      }
+      $this->exec("ln -sfn $to $from");
+    }
   }
 
 }
