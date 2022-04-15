@@ -162,7 +162,22 @@ class Deployment extends WireData {
   public function run() {
     $this->share();
     $this->delete();
-    // $this->secure();
+    $this->secure();
+  }
+
+  /**
+   * Secure file and folder permissions
+   * @return void
+   */
+  public function secure() {
+    $release = $this->paths->release;
+    $shared = $this->paths->shared;
+    $this->exec("
+      find $release -type d -exec chmod 755 {} \;
+      find $release -type f -exec chmod 644 {} \;
+      chmod 440 $release/site/config.php
+      chmod 440 $shared/site/config-local.php
+    ");
   }
 
   /**
