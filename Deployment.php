@@ -97,7 +97,7 @@ class Deployment extends WireData {
     $this->exec("mv $oldPath {$this->paths->root}/$newName");
     $this->exec("
       cd {$this->paths->root}
-      ln -sf $newName current
+      ln -snf $newName current
     ");
     $this->deleteOldReleases($keep);
   }
