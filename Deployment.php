@@ -41,12 +41,12 @@ class Deployment extends WireData {
       }
       if($rename) {
         if($cnt>1) {
-          $this->echo("rename $base -> $base-", 2);
+          $this->echo("Renaming $base -> $base-", 2);
           $this->exec("mv $folder $folder-");
           $folder = "$folder-";
           $base = "$base-";
         }
-        else $this->echo("keeping $base", 2);
+        else $this->echo("Keeping $base", 2);
       }
     }
     $this->echo("Done");
@@ -84,7 +84,7 @@ class Deployment extends WireData {
   public function finish($keep = 3) {
     $oldPath = $this->paths->release;
     $newName = substr(basename($oldPath), 4);
-    $this->echo("Finishing deployment - updating current symlink...");
+    $this->echo("Finishing deployment - updating symlink...");
     $this->exec("mv $oldPath {$this->paths->root}/$newName");
     $this->exec("
       cd {$this->paths->root}
