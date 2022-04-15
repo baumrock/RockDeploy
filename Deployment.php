@@ -7,6 +7,7 @@ chdir(dirname(dirname(dirname(__DIR__))));
 require_once "wire/core/ProcessWire.php";
 class Deployment extends WireData {
 
+  public $dry;
   public $paths;
 
   public function __construct() {
@@ -21,17 +22,27 @@ class Deployment extends WireData {
    * This does also rename old release folders to make symlinks aware of the
    * change without rebooting the server or reloading php-fpm
    */
-  public function cleanupOldReleases($keep = 3, $rename = true) {
+  public function deleteOldReleases($keep = 3, $rename = true) {
+    $this->echo("Deleting old releases...");
     $folders = glob($this->paths->deploydir."/release-*");
     rsort($folders);
     $cnt = 0;
     foreach($folders as $folder) {
       $cnt++;
-      $newname = $rename ? "$folder-" : $folder;
-      if($cnt>1) $this->exec("mv $folder $newname", 2, false);
+      $base = basename($folder);
       if($cnt>$keep) {
-        $this->echo("Deleting $newname", 2);
-        // $this->exec("rm -rf $newname", 2, false);
+        $this->echo("Deleting $base", 2);
+        $this->exec("rm -rf $folder", 2, false);
+        continue;
+      }
+      if($rename) {
+        if($cnt>1) {
+          $this->echo("rename $base -> $base-", 2);
+          $this->exec("mv $folder $folder-", 2, false);
+          $folder = "$folder-";
+          $base = "$base-";
+        }
+        else $this->echo("keeping $base", 2);
       }
     }
   }
@@ -44,7 +55,9 @@ class Deployment extends WireData {
     if(is_string($msg)) {
       echo "{$indent}$msg\n";
     }
-    elseif(is_array($msg)) echo print_r($msg);
+    elseif(is_array($msg)) {
+      if(count($msg)) echo print_r($msg, true)."\n";
+    }
   }
 
   /**
