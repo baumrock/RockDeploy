@@ -154,17 +154,24 @@ class Deployment extends WireData {
 
       if($isfile) {
         $this->echo("Sharing file $from");
+        $this->exec("ln -sfn $to $from");
       }
       else {
         $this->echo("Sharing directory $from");
-        if($type == 'push') {
+
+        // pushonly means we only push files to the shared folder
+        // but we do not create a symlink. This can be used to push site
+        // translations where the files folder itself is already symlinked
+        if($type == 'pushonly') {
           $this->exec("
             rm -rf $toAbs
             mkdir -p $toDir
             mv $from $toDir
           ");
         }
-        $this->exec("ln -sfn $to $from");
+        else {
+          $this->exec("ln -sfn $to $from");
+        }
       }
     }
   }
