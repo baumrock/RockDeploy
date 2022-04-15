@@ -12,8 +12,12 @@ class Deployment extends WireData {
 
   public function __construct() {
     $this->paths = new WireData();
-    $this->paths->pwroot = getcwd();
-    $this->paths->deploydir = dirname($this->paths->pwroot);
+
+    // path to the current release
+    $this->paths->release = getcwd();
+
+    // path to the root that contains all releases and current + shared folder
+    $this->paths->root = dirname($this->paths->release);
   }
 
   /**
@@ -24,7 +28,7 @@ class Deployment extends WireData {
    */
   public function deleteOldReleases($keep = 3, $rename = true) {
     $this->echo("Deleting old releases...");
-    $folders = glob($this->paths->deploydir."/release-*");
+    $folders = glob($this->paths->root."/release-*");
     rsort($folders);
     $cnt = 0;
     foreach($folders as $folder) {
@@ -69,6 +73,20 @@ class Deployment extends WireData {
     if($this->dry) return;
     exec($cmd, $out);
     $this->echo($out);
+  }
+
+  /**
+   * Finish deployment
+   * This removes the tmp- prefix from the deployment folder
+   * and updates the "current" symlink
+   * @return void
+   */
+  public function finish() {
+    $old = $this->paths->release;
+    $new = $this->paths->root."/".substr(basename($old), 4);
+    $current = $this->paths->root."/current";
+    $this->exec("mv $old $new");
+    $this->exec("ln -sfn $new $current");
   }
 
   public function hello() {
