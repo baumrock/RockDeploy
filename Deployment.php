@@ -97,7 +97,7 @@ class Deployment extends WireData {
     $this->exec("mv $oldPath {$this->paths->root}/$newName");
     $this->exec("
       cd {$this->paths->root}
-      ln -sfn $newName current
+      ln -sf $newName current
     ");
     $this->deleteOldReleases($keep);
   }
@@ -154,7 +154,7 @@ class Deployment extends WireData {
 
       if($isfile) {
         $this->echo("Sharing file $from");
-        $this->exec("ln -sfn $to $from");
+        $this->exec("ln -sf $to $from");
       }
       else {
         $this->echo("Sharing directory $from");
@@ -170,7 +170,7 @@ class Deployment extends WireData {
           ");
         }
         else {
-          $this->exec("ln -sfn $to $from");
+          $this->exec("ln -sf $to $from");
         }
       }
     }
