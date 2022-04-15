@@ -8,8 +8,10 @@ chdir(dirname(dirname(dirname(__DIR__))));
 require_once "wire/core/ProcessWire.php";
 class Deployment extends WireData {
 
+  public $delete = [];
   public $dry;
   public $paths;
+  public $share = [];
 
   public function __construct() {
     $this->paths = new WireData();
@@ -22,6 +24,46 @@ class Deployment extends WireData {
 
     // path to shared folder
     $this->paths->shared = $this->paths->root."/shared";
+
+    // setup default share directories
+    $this->share = [
+      '/site/config-local.php',
+      '/site/assets/files',
+      '/site/assets/logs',
+    ];
+
+    // setup default delete directories
+    $this->delete = [
+      '/.ddev',
+      '/.git',
+      '/.github',
+      '/site/assets/backups',
+      '/site/assets/cache',
+      '/site/assets/ProCache',
+      '/site/assets/pwpc-*',
+      '/site/assets/sessions',
+    ];
+
+  }
+
+  /**
+   * Delete files from release
+   * @return void
+   */
+  public function delete($files = null, $reset = false) {
+    if(is_array($files)) {
+      if($reset) $this->delete = [];
+      $this->delete = $files+$this->delete;
+    }
+    elseif($files === null) {
+      // execute deletion
+      $this->echo("Deleting files...");
+      foreach($this->delete as $file) {
+        $file = trim(Paths::normalizeSeparators($file), "/");
+        $this->exec("rm -rf $file");
+      }
+      $this->echo("Done");
+    }
   }
 
   /**
@@ -114,65 +156,78 @@ class Deployment extends WireData {
   }
 
   /**
+   * Run default actions
+   */
+  public function run() {
+    $this->share();
+    $this->delete();
+  }
+
+  /**
    * Share files and folders
    *
    * Usage:
-   * $deploy->share(
+   * $deploy->share([
    *   '/site/assets/files/123' => 'push',
-   *   '/site/assets/files' => 'link', // link is default
-   *   '/site/config-local.php',
-   * );
+   * ]);
    * @return void
    */
-  public function share(array $files) {
-    $this->echo("Setting up shared files...");
+  public function share($files = null, $reset = false) {
+    if(is_array($files)) {
+      if($reset) $this->share = [];
+      $this->share = $files+$this->share;
+    }
+    elseif($files === null) {
+      $this->echo("Setting up shared files...");
 
-    $release = $this->paths->release;
-    $shared = $this->paths->shared;
+      $release = $this->paths->release;
+      $shared = $this->paths->shared;
+      foreach($this->share as $k=>$v) {
+        $file = $v;
 
-    foreach($files as $k=>$v) {
-      $file = $v;
+        // push to shared folder or just create link?
+        $type = 'link';
+        if(is_string($k)) {
+          $file = $k;
+          $type = $v;
+        }
 
-      // push to shared folder or just create link?
-      $type = 'link';
-      if(is_string($k)) {
-        $file = $k;
-        $type = $v;
-      }
+        // prepare the src path
+        $file = trim(Paths::normalizeSeparators($file), "/");
+        $from = Paths::normalizeSeparators("$release/$file");
+        $toAbs = Paths::normalizeSeparators("$shared/$file");
+        $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
+        $toDir = dirname($toAbs);
 
-      // prepare the src path
-      $file = trim($file, "/");
-      $from = Paths::normalizeSeparators("$release/$file");
-      $toAbs = Paths::normalizeSeparators("$shared/$file");
-      $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
-      $toDir = dirname($toAbs);
+        // we create relative symlinks
+        $level = substr_count($file, "/");
+        $to = "shared/$file";
+        for($i=0;$i<=$level;$i++) $to = "../$to";
 
-      // we create relative symlinks
-      $level = substr_count($file, "/");
-      $to = "shared/$file";
-      for($i=0;$i<=$level;$i++) $to = "../$to";
-
-      if($isfile) {
-        $this->echo("Sharing file $from");
-        $this->exec("ln -sf $to $from");
-      }
-      else {
-        $this->echo("Sharing directory $from");
-
-        // push means we only push files to the shared folder
-        // but we do not create a symlink. This can be used to push site
-        // translations where the files folder itself is already symlinked
-        if($type == 'push') {
-          $this->exec("
-            rm -rf $toAbs
-            mkdir -p $toDir
-            mv $from $toDir
-          ");
+        if($isfile) {
+          $this->echo("Sharing file $from");
+          $this->exec("ln -sf $to $from");
         }
         else {
-          $this->exec("rm -rf $from && ln -snf $to $from");
+          $this->echo("Sharing directory $from");
+
+          // push means we only push files to the shared folder
+          // but we do not create a symlink. This can be used to push site
+          // translations where the files folder itself is already symlinked
+          if($type == 'push') {
+            $this->exec("
+              rm -rf $toAbs
+              mkdir -p $toDir
+              mv $from $toDir
+            ");
+          }
+          else {
+            $this->exec("rm -rf $from && ln -snf $to $from");
+          }
         }
       }
+
+      $this->echo("Done");
     }
   }
 
