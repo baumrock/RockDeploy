@@ -145,7 +145,7 @@ class Deployment extends WireData {
       $from = Paths::normalizeSeparators("$release/$file");
       $toAbs = Paths::normalizeSeparators("$shared/$file");
       $isfile = !!pathinfo($from, PATHINFO_EXTENSION);
-      $toDir = $isfile ? dirname($toAbs) : $toAbs;
+      $toDir = dirname($toAbs);
 
       // we create relative symlinks
       $level = substr_count($file, "/");
