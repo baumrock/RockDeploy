@@ -151,6 +151,7 @@ class Deployment extends WireData {
       RockDeploy by baumrock.com
       ##########################
     ");
+    $this->echo("Creating new release at {$this->paths->release}\n");
   }
 
   /**
