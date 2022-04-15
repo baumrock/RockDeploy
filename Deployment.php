@@ -64,11 +64,11 @@ class Deployment extends WireData {
   /**
    * Execute command and echo output
    */
-  public function exec($cmd, $indent = 0, $echoCmd = true) {
-    if($echoCmd) $this->echo($cmd, $indent);
+  public function exec($cmd, $echoCmd = false) {
+    if($echoCmd) $this->echo($cmd);
     if($this->dry) return;
     exec($cmd, $out);
-    $this->echo($out, $indent);
+    $this->echo($out);
   }
 
   public function hello() {
