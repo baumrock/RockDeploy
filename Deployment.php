@@ -162,6 +162,7 @@ class Deployment extends WireData {
   public function run() {
     $this->share();
     $this->delete();
+    // $this->secure();
   }
 
   /**
@@ -206,11 +207,11 @@ class Deployment extends WireData {
         for($i=0;$i<=$level;$i++) $to = "../$to";
 
         if($isfile) {
-          $this->echo("Sharing file $from");
+          $this->echo("  file $from");
           $this->exec("ln -sf $to $from");
         }
         else {
-          $this->echo("Sharing directory $from");
+          $this->echo("  directory $from");
 
           // push means we only push files to the shared folder
           // but we do not create a symlink. This can be used to push site
