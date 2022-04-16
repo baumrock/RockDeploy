@@ -55,6 +55,14 @@ class Deployment extends WireData {
 
   }
 
+  public function addRobots() {
+    if($this->branch == 'main') return;
+    if($this->branch == 'master') return;
+    $this->echo("Hiding site from search engines via robots.txt");
+    $release = $this->paths->release;
+    $this->exec("printf 'User-agent:\\nDisallow:/ > $release/robots.txt");
+  }
+
   /**
    * Delete files from release
    * @return void
@@ -218,13 +226,15 @@ class Deployment extends WireData {
   /**
    * Run default actions
    */
-  public function run() {
+  public function run($keep = null) {
     $this->hello();
     $this->share();
     $this->delete();
     $this->secure();
     $this->dumpDB();
     $this->migrate();
+    $this->addRobots();
+    $this->finish($keep);
   }
 
   /**
