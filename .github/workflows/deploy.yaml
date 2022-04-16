@@ -2,6 +2,11 @@ name: RockDeploy
 
 on:
   workflow_call:
+    inputs:
+      ROOT_PATH_STAGING:
+        type: string
+      ROOT_PATH_PRODUCTION:
+        type: string
     secrets:
       CI_TOKEN:
         required: true
@@ -25,13 +30,13 @@ jobs:
       - name: Configuration for main branch
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          echo "ROOT_PATH=${{ input.ROOT_PATH_PRODUCTION }}" >> $GITHUB_ENV
+          echo "ROOT_PATH=${{ inputs.ROOT_PATH_PRODUCTION }}" >> $GITHUB_ENV
 
       # config for dev branch
       - name: Configuration for dev branch
         if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
-          echo "ROOT_PATH=${{ input.ROOT_PATH_STAGING }}" >> $GITHUB_ENV
+          echo "ROOT_PATH=${{ inputs.ROOT_PATH_STAGING }}" >> $GITHUB_ENV
 
       # shared config
       - name: Build shared config
