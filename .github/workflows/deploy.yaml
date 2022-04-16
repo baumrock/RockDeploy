@@ -10,6 +10,12 @@ on:
     secrets:
       CI_TOKEN:
         required: true
+      SSH_USER:
+        required: true
+      SSH_HOST:
+        required: true
+      KNOWN_HOSTS:
+        required: true
 
 jobs:
   deploy:
