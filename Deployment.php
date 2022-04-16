@@ -60,7 +60,8 @@ class Deployment extends WireData {
     if($this->branch == 'master') return;
     $this->echo("Hiding site from search engines via robots.txt");
     $release = $this->paths->release;
-    $this->exec("printf 'User-agent:\\nDisallow:/ > $release/robots.txt");
+    $src = __DIR__."/robots.txt";
+    $this->exec("cp -f $src $release/robots.txt");
   }
 
   /**
