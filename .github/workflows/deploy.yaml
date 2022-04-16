@@ -61,5 +61,5 @@ jobs:
 
       - name: Trigger RockDeploy PHP
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p22 "php ${{ env.DEPLOY_FOLDER }}/site/rockdeploy.php"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p22 "php ${{ env.DEPLOY_FOLDER }}/site/rockdeploy.php ${{steps.branch.outputs.ref}}"
 

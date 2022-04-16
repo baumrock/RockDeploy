@@ -8,13 +8,15 @@ chdir(dirname(dirname(dirname(__DIR__))));
 require_once "wire/core/ProcessWire.php";
 class Deployment extends WireData {
 
+  public $branch;
   public $delete = [];
   public $dry;
   public $paths;
   public $share = [];
 
-  public function __construct() {
+  public function __construct($argv) {
     $this->paths = new WireData();
+    $this->branch = $argv[1];
 
     // path to the current release
     $this->paths->release = getcwd();
