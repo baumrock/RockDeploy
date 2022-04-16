@@ -122,13 +122,13 @@ class Deployment extends WireData {
 
       // load config
       $config = new Config();
-      include "site/config.php";
-      $c = $config;
-      $dir = 'site/assets/backups/database';
+      $current = $this->paths->root."/current";
+      include "$current/site/config.php";
+      $dir = "$current/site/assets/backups/database";
       $sql = "$dir/rockdeploy.sql";
       $this->exec("
         mkdir -p $dir
-        mysqldump -u{$c->dbUser} -p{$c->dbPass} {$c->dbName} > $sql
+        mysqldump -u{$config->dbUser} -p{$config->dbPass} {$config->dbName} > $sql
       ");
       $this->echo("Done ($sql)");
     } catch (\Throwable $th) {
