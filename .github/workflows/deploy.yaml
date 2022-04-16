@@ -7,6 +7,9 @@ on:
         type: string
       ROOT_PATH_PRODUCTION:
         type: string
+      PATHS:
+        type: string
+        required: true
     secrets:
       CI_TOKEN:
         required: true
@@ -18,6 +21,9 @@ on:
         required: true
       KNOWN_HOSTS:
         required: true
+
+env:
+  BRANCH: ${GITHUB_REF##*/}
 
 jobs:
   deploy:
@@ -46,8 +52,7 @@ jobs:
         run: |
           echo "ROOT_PATH=${{ inputs.ROOT_PATH_STAGING }}" >> $GITHUB_ENV
 
-      # shared config
-      - name: Build shared config
+      - name: Build ENV
         run: |
           SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`
           echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
@@ -55,7 +60,11 @@ jobs:
           DEPLOY_NAME=release-$GITHUB_RUN_ID-$SHORT_SHA
           echo "DEPLOY_NAME=$DEPLOY_NAME" >> $GITHUB_ENV
 
-          echo "DEPLOY_FOLDER=${{ env.ROOT_PATH }}/tmp-$DEPLOY_NAME" >> $GITHUB_ENV
+          echo "Branch: ${{env.BRANCH}}"
+          echo "Path: ${{fromJson(env.PATHS)[env.BRANCH]}}"
+
+          echo "DEPLOY_FOLDER=$ROOT_PATH/tmp-$DEPLOY_NAME" >> $GITHUB_ENV
+
           echo "USER=${{ secrets.SSH_USER }}" >> $GITHUB_ENV
           echo "HOST=${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
           echo "SRC=${{ github.workspace }}" >> $GITHUB_ENV
