@@ -1,0 +1,21 @@
+name: RockDeploy
+
+on:
+  workflow_call:
+    secrets:
+      CI_TOKEN:
+        required: true
+
+jobs:
+  deploy-to-remote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # use github PAT https://bit.ly/3xvOvrF
+          token: ${{ secrets.CI_TOKEN }}
+          submodules: true
+
+      - name: List files in the repository
+        run: ls ${{ github.workspace }}
