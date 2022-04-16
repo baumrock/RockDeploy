@@ -117,6 +117,7 @@ class Deployment extends WireData {
    * Create DB dump
    */
   public function dumpDB() {
+    if($this->dry) return $this->echo("Dry run - skipping dumpDB()...");
     try {
       $this->echo("Trying to create a DB dump...");
 
@@ -125,12 +126,12 @@ class Deployment extends WireData {
       $current = $this->paths->root."/current";
       include "$current/site/config.php";
       $dir = "$current/site/assets/backups/database";
-      $sql = realpath("$dir/rockdeploy.sql");
+      $sql = "$dir/rockdeploy.sql";
       $this->exec("
         mkdir -p $dir
         mysqldump -u'{$config->dbUser}' -p'{$config->dbPass}' {$config->dbName} > $sql
       ");
-      $this->echo("Done ($sql)");
+      $this->echo("Done: ".realpath($sql));
     } catch (\Throwable $th) {
       $this->echo($th->getMessage());
     }
@@ -168,7 +169,7 @@ class Deployment extends WireData {
    */
   public function finish($keep = 3) {
     if($this->dry) {
-      $this->echo("Dry run - skipping finish...");
+      $this->echo("Dry run - skipping finish()...");
       return;
     }
     $oldPath = $this->paths->release;
