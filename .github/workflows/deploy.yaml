@@ -19,3 +19,45 @@ jobs:
 
       - name: List files in the repository
         run: ls ${{ github.workspace }}
+
+      # https://bit.ly/3jHvfzd
+      # config for main branch
+      - name: Configuration for main branch
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          echo "ROOT_PATH=${{ input.ROOT_PATH_PRODUCTION }}" >> $GITHUB_ENV
+
+      # config for dev branch
+      - name: Configuration for dev branch
+        if: ${{ github.ref == 'refs/heads/dev' }}
+        run: |
+          echo "ROOT_PATH=${{ input.ROOT_PATH_STAGING }}" >> $GITHUB_ENV
+
+      # shared config
+      - name: Build shared config
+        run: |
+          SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-8`
+          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
+
+          DEPLOY_NAME=release-$GITHUB_RUN_ID-$SHORT_SHA
+          echo "DEPLOY_NAME=$DEPLOY_NAME" >> $GITHUB_ENV
+
+          echo "DEPLOY_FOLDER=${{ env.ROOT_PATH }}/tmp-$DEPLOY_NAME" >> $GITHUB_ENV
+          echo "USER=${{ secrets.SSH_USER }}" >> $GITHUB_ENV
+          echo "HOST=${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
+          echo "SRC=${{ github.workspace }}" >> $GITHUB_ENV
+
+      # ssh-keyscan your.remote.com --> output to git secret KNOWN_HOSTS
+      - name: Create SSH key
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Deploy with rsync
+        run: rsync -avz --delete --exclude '.git' ${{ env.SRC }}/ ${{ env.USER }}@${{ env.HOST }}:${{ env.DEPLOY_FOLDER }}
+
+      - name: Trigger RockDeploy PHP
+        run: |
+          ssh ${{ env.USER }}@${{ env.HOST }} -p22 "php ${{ env.DEPLOY_FOLDER }}/site/rockdeploy.php"
+
