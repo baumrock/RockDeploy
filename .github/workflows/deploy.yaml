@@ -45,6 +45,8 @@ jobs:
           echo "DEPLOY_NAME=$DEPLOY_NAME" >> $GITHUB_ENV
 
           ROOT_PATH=${{fromJson(inputs.PATHS)[steps.branch.outputs.ref]}}
+          echo "Using path $ROOT_PATH for branch ${{steps.branch.outputs.ref}}"
+
           echo "DEPLOY_FOLDER=$ROOT_PATH/tmp-$DEPLOY_NAME" >> $GITHUB_ENV
           echo "USER=${{ secrets.SSH_USER }}" >> $GITHUB_ENV
           echo "HOST=${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
