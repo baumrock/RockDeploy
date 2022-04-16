@@ -56,6 +56,7 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          ssh ${{ env.USER }}@${{ env.HOST }} -p22 "ls"
 
       - name: Deploy with rsync
         run: rsync -avz --delete --exclude '.git' ${{ env.SRC }}/ ${{ env.USER }}@${{ env.HOST }}:${{ env.DEPLOY_FOLDER }}
