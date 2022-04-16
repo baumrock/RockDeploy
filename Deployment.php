@@ -198,6 +198,17 @@ class Deployment extends WireData {
   }
 
   /**
+   * Run RockMigrations
+   */
+  public function migrate() {
+    $release = $this->paths->release;
+    $file = "$release/site/modules/RockMigrations/migrate.php";
+    if(!is_file($file)) return $this->echo("RockMigrations not found...");
+    $this->echo("Trigger RockMigrations...");
+    $this->exec("php $file");
+  }
+
+  /**
    * Print paths
    */
   public function paths() {
@@ -213,6 +224,7 @@ class Deployment extends WireData {
     $this->delete();
     $this->secure();
     $this->dumpDB();
+    $this->migrate();
   }
 
   /**
