@@ -32,8 +32,7 @@ jobs:
       - name: List files in the repository
         run: ls ${{ github.workspace }}
 
-      - name: Set Branch Variable
-        id: branch
+      - id: branch
         run: echo "::set-output name=ref::${GITHUB_REF##*/}"
 
       - name: Build ENV
