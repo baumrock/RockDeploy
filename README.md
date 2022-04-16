@@ -7,7 +7,7 @@ Set secrets `SSH_USER` and `SSH_HOST`
 
 Create a keypair for your deploy workflow:
 
-    ssh-keygen -t rsa -b 4096 -C "deploy-[project]@rockdeploy.pw" -f ~/.ssh/id_rockdeploy
+    ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rockdeploy -C "deploy-[project]@rockdeploy.pw"
 
 Copy content of the private key to your git secret `SSH_KEY`:
 
@@ -20,3 +20,7 @@ Copy content of keyscan to your git secret `KNOWN_HOSTS`
 Add the public key to your remote user:
 
     ssh-copy-id -i ~/.ssh/id_rockdeploy user@your.server.com
+
+Try to ssh into your server without using a password:
+
+    ssh -i ~/.ssh/id_rockdeploy user@your.server.com
