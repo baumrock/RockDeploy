@@ -1,5 +1,6 @@
 <?php namespace RockDeploy;
 
+use ProcessWire\Config;
 use ProcessWire\Paths;
 use ProcessWire\WireData;
 
@@ -10,19 +11,25 @@ class Deployment extends WireData {
 
   public $branch;
   public $delete = [];
-  public $dry;
+  public $dry = false;
   public $paths;
   public $share = [];
 
-  public function __construct($argv) {
+  public function __construct($argv, $path) {
     $this->paths = new WireData();
-    $this->branch = $argv[1];
+    $this->branch = count($argv)>1 ? $argv[1] : '';
 
     // path to the current release
     $this->paths->release = getcwd();
 
     // path to the root that contains all releases and current + shared folder
     $this->paths->root = dirname($this->paths->release);
+    if(strpos($this->paths->root, $path) !== 0) {
+      // the current root path does not match the provided path argument
+      // this means we are not on the deployment server, so we make it dry
+      $this->echo("Not in defined path - running dry...");
+      $this->dry();
+    }
 
     // path to shared folder
     $this->paths->shared = $this->paths->root."/shared";
@@ -76,7 +83,7 @@ class Deployment extends WireData {
    * change without rebooting the server or reloading php-fpm
    */
   public function deleteOldReleases($keep = 3, $rename = true) {
-    $this->echo("Deleting old releases...");
+    $this->echo("Cleaning up old releases...");
     $folders = glob($this->paths->root."/release-*");
     rsort($folders);
     $cnt = 0;
@@ -104,6 +111,29 @@ class Deployment extends WireData {
 
   public function dry($flag = true) {
     $this->dry = $flag;
+  }
+
+  /**
+   * Create DB dump
+   */
+  public function dumpDB() {
+    try {
+      $this->echo("Trying to create a DB dump...");
+
+      // load config
+      $config = new Config();
+      include "site/config.php";
+      $c = $config;
+      $dir = 'site/assets/backups/database';
+      $sql = "$dir/rockdeploy.sql";
+      $this->exec("
+        mkdir -p $dir
+        mysqldump -u{$c->dbUser} -p{$c->dbPass} {$c->dbName} > $sql
+      ");
+      $this->echo("Done ($sql)");
+    } catch (\Throwable $th) {
+      $this->echo($th->getMessage());
+    }
   }
 
   /**
@@ -137,6 +167,10 @@ class Deployment extends WireData {
    * @return void
    */
   public function finish($keep = 3) {
+    if($this->dry) {
+      $this->echo("Dry run - skipping finish...");
+      return;
+    }
     $oldPath = $this->paths->release;
     $newName = substr(basename($oldPath), 4);
     $this->echo("Finishing deployment - updating symlink...");
@@ -172,6 +206,7 @@ class Deployment extends WireData {
     $this->share();
     $this->delete();
     $this->secure();
+    $this->dumpDB();
   }
 
   /**
