@@ -119,7 +119,7 @@ class Deployment extends WireData {
   public function dumpDB() {
     if($this->dry) return $this->echo("Dry run - skipping dumpDB()...");
     try {
-      $this->echo("Trying to create a DB dump...");
+      $this->echo("Trying to create a DB dump of old release...");
 
       // load config
       $config = new Config();
