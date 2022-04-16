@@ -47,22 +47,19 @@ jobs:
           echo "Using path $ROOT_PATH for branch ${{steps.branch.outputs.ref}}"
 
           echo "DEPLOY_FOLDER=$ROOT_PATH/tmp-$DEPLOY_NAME" >> $GITHUB_ENV
-          echo "USER=${{ secrets.SSH_USER }}" >> $GITHUB_ENV
-          echo "HOST=${{ secrets.SSH_HOST }}" >> $GITHUB_ENV
           echo "SRC=${{ github.workspace }}" >> $GITHUB_ENV
 
-      # ssh-keyscan your.remote.com --> output to git secret KNOWN_HOSTS
-      - name: Create SSH key
+      - name: Install SSH key
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           echo "${{ secrets.KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-          ssh ${{ env.USER }}@${{ env.HOST }} -p22 "ls"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p22 "pwd"
 
       - name: Deploy with rsync
-        run: rsync -avz --delete --exclude '.git' ${{ env.SRC }}/ ${{ env.USER }}@${{ env.HOST }}:${{ env.DEPLOY_FOLDER }}
+        run: rsync -avz --delete --exclude '.git' ${{ env.SRC }}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_FOLDER }}
 
       - name: Trigger RockDeploy PHP
         run: |
-          ssh ${{ env.USER }}@${{ env.HOST }} -p22 "php ${{ env.DEPLOY_FOLDER }}/site/rockdeploy.php"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} -p22 "php ${{ env.DEPLOY_FOLDER }}/site/rockdeploy.php"
 
